@@ -1,0 +1,14 @@
+init
+ a, _b is integer;
+
+ write("Digite um valor: ");
+ read(a);
+ write("Digite uma quantidade: ");
+ read(b);
+
+ write("Valor : ");
+ write(a);
+
+ write("Quantidade: ");
+ write(b);
+end
