@@ -6,7 +6,8 @@ public class test {
 
     public static void lexTest(int n){
         try {
-            LexicalAnalyzer lex_anal=new LexicalAnalyzer("test_"+n+".lang");
+            String path=test.class.getClassLoader().getResource("test_"+n+".lang").getPath().replaceAll("%20", " ");;
+            LexicalAnalyzer lex_anal=new LexicalAnalyzer(path);
             System.out.println(lex_anal.getAllTokensString());
             System.out.println(lex_anal.getTable());
         } catch (FileNotFoundException e) {

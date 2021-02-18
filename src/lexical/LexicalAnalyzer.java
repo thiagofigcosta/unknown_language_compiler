@@ -16,7 +16,7 @@ public class LexicalAnalyzer {
     private State cur_state;
 
     public LexicalAnalyzer(String source_path) throws FileNotFoundException {
-        this.source_path = getClass().getClassLoader().getResource(source_path).getPath();
+        this.source_path = source_path;
         this.table=new SymbolTable();
         this.init();
     }
