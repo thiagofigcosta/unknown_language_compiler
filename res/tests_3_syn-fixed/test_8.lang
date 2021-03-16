@@ -1,0 +1,11 @@
+init
+ a, b is integer;
+
+ write("Digite um valor: ");
+ reads(a);
+
+ b = (a * 2) + 101;
+
+ write("Valor apos calculos: ");
+ write(b);
+end
