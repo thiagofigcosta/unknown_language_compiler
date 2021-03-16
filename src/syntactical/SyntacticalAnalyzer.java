@@ -34,7 +34,7 @@ public class SyntacticalAnalyzer {
             this.cur_token=lex.getToken();
         }else{
             displayError("Expected token: "+to_eat+" but got: "+cur_token.getType(),this.lex.getCurLine());
-            this.cur_token=lex.getToken(); // to continue and avoid loops
+            this.cur_token=lex.getToken(); // to continue and avoid loops (the parser fakes that the token was found in order to continue)
         }
     }
 
