@@ -1,7 +1,7 @@
 % Programa de Teste
 Calculo de idade%
 INIT
- cont is int;
+ cont is integer;
  media, idade, soma is integer;
  begin
  cont := 5;
@@ -13,8 +13,8 @@ INIT
  soma := soma+altura;
  cont := cont - 1;
 
- while(cont > 0)
- media := soma / qts
+ while(cont > 0);
+ media := soma / qts;
  write("Media: ");
  write (media);
 STOP

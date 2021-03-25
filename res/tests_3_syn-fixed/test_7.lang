@@ -1,6 +1,6 @@
 init
  a, b is integer;
-
+begin
  write("Digite um valor: ");
  read(a);
  write("Digite uma quantidade: ");
@@ -11,4 +11,4 @@ init
 
  write("Quantidade: ");
  write(b);
-end
+stop
