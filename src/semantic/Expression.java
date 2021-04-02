@@ -7,10 +7,26 @@ import java.util.List;
 
 public class Expression {
     private SemanticAnalyzer.Type type;
+
+    public Lexeme.Type getToken() {
+        return token;
+    }
+
+    public void setToken(Lexeme.Type token) {
+        this.token = token;
+    }
+
+    private Lexeme.Type token;
     private final List<String> identifiers;
 
     public Expression(SemanticAnalyzer.Type type) {
         this.type = type;
+        identifiers = new ArrayList<>();
+    }
+
+    public Expression(SemanticAnalyzer.Type type, Lexeme.Type token) {
+        this.type = type;
+        this.token=token;
         identifiers = new ArrayList<>();
     }
 

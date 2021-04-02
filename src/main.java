@@ -1,7 +1,9 @@
+import code_generator.CodeGenerator;
 import lexical.LexicalAnalyzer;
 import syntactical.SyntacticalAnalyzer;
 
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 
 import static java.lang.System.exit;
 
@@ -11,14 +13,19 @@ public class main {
             System.err.println("Please provide just one argument not " + args.length + "!");
             exit(1);
         }
-        String filepath = args[0];
+        String input_path = args[0];
+        String output_path = input_path.substring(0, input_path.lastIndexOf('.')) + ".a";
         try {
-            LexicalAnalyzer lex_anal = new LexicalAnalyzer(filepath);
+            LexicalAnalyzer lex_anal = new LexicalAnalyzer(input_path);
             SyntacticalAnalyzer syn_anal = new SyntacticalAnalyzer(lex_anal);
             syn_anal.run();
-            System.out.println("File analyzed successfully!");
+            CodeGenerator code_gen = syn_anal.getCodeGenerator();
+            try (PrintWriter out = new PrintWriter(output_path)) {
+                out.println(code_gen.getCode());
+            }
+            System.out.println("File parsed successfully!");
         } catch (FileNotFoundException e) {
-            System.err.println("File (" + filepath + ") not found!");
+            System.err.println("File (" + input_path + ") not found!");
             e.printStackTrace();
             exit(1);
         } catch (Exception e) {

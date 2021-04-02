@@ -1,5 +1,6 @@
 package semantic;
 
+import code_generator.CodeGenerator;
 import lexical.Lexeme;
 import lexical.LexicalAnalyzer;
 import utils.Tuple;
@@ -10,11 +11,13 @@ public class SemanticAnalyzer {
 
     private static PrintStream stderr = System.err;
     private final LexicalAnalyzer lex;
+    private final CodeGenerator code;
     private int error_counter;
 
-    public SemanticAnalyzer(LexicalAnalyzer lex) {
+    public SemanticAnalyzer(LexicalAnalyzer lex,CodeGenerator code) {
         error_counter = 0;
         this.lex = lex;
+        this.code=code;
     }
 
     public static void setStderr(PrintStream stderr) {
@@ -85,8 +88,9 @@ public class SemanticAnalyzer {
     }
 
     public Expression declareVariables(Expression identifiers, Expression type) {
-        for (String idenfier : identifiers.getIdentifiers()) {
-            lex.getTable().add(Lexeme.Builder.aLexeme().withType(Lexeme.Type.IDENTIFIER).withValue(idenfier).build(), type.getType());
+        for (String identifier : identifiers.getIdentifiers()) {
+            lex.getTable().add(Lexeme.Builder.aLexeme().withType(Lexeme.Type.IDENTIFIER).withValue(identifier).build(), type.getType());
+            code.declareVariable(identifier,type.getType());
         }
         return Expression.void_();
     }

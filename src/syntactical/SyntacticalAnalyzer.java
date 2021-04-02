@@ -1,5 +1,6 @@
 package syntactical;
 
+import code_generator.CodeGenerator;
 import lexical.Lexeme;
 import lexical.LexicalAnalyzer;
 import semantic.Expression;
@@ -55,13 +56,15 @@ public class SyntacticalAnalyzer {
     private static PrintStream stderr = System.err;
     private final LexicalAnalyzer lex;
     private final SemanticAnalyzer sem;
+    private final CodeGenerator code;
     private final Stack<GrammarRule> parse_stack;
     private Lexeme cur_token;
     private int error_counter;
 
     public SyntacticalAnalyzer(LexicalAnalyzer lex) {
         this.lex = lex;
-        this.sem = new SemanticAnalyzer(lex);
+        this.code = new CodeGenerator();
+        this.sem = new SemanticAnalyzer(lex,code);
         this.cur_token = lex.getToken();
         this.error_counter = 0;
         this.parse_stack = new Stack<>();
@@ -72,6 +75,10 @@ public class SyntacticalAnalyzer {
         SemanticAnalyzer.setStderr(stderr);
     }
 
+    public CodeGenerator getCodeGenerator(){
+        return code;
+    }
+
     private static Lexeme.Type[] listToNativeArray(List<Lexeme.Type> list) {
         Lexeme.Type[] out = new Lexeme.Type[list.size()];
         for (int i = 0; i < list.size(); i++)
@@ -80,8 +87,10 @@ public class SyntacticalAnalyzer {
     }
 
     public void run() throws Exception {
+        code.startProgram();
         program();
         eat(Lexeme.Type.EOF);
+        code.endProgram();
         if (this.error_counter > 0 || sem.getErrorCounter() > 0) {
             throw new Exception("There was " + error_counter + " errors during syntactical analysis and " + sem.getErrorCounter() + " errors during semantic analysis");
         }
@@ -343,6 +352,7 @@ public class SyntacticalAnalyzer {
         if (!eat(Lexeme.Type.ASSIGN))
             return Expression.error();
         expression = sem.validateAssign(expression, simple_expr());
+        code.assignToVariableFromStack(identifier.getValue());
         parse_stack.pop();
         return expression;
     }
@@ -354,6 +364,9 @@ public class SyntacticalAnalyzer {
         if (!eat(Lexeme.Type.OPENTHEPAR))
             return Expression.error();
         condition();
+        String after_if_a=code.getIncrementalTagName("AFTER_IF_A");
+        String after_if_b=code.getIncrementalTagName("AFTER_IF_B");
+        code.jzStack(after_if_a);
         if (!eat(Lexeme.Type.CLOSETHEPAR))
             return Expression.error();
         if (!eat(Lexeme.Type.BEGIN))
@@ -362,6 +375,8 @@ public class SyntacticalAnalyzer {
         if (!eat(Lexeme.Type.END))
             return Expression.error();
         if (checkToken(Lexeme.Type.ELSE)) {
+            code.jumpStack(after_if_b);
+            code.setTag(after_if_a);
             if (!eat(Lexeme.Type.ELSE))
                 return Expression.error();
             if (!eat(Lexeme.Type.BEGIN))
@@ -369,7 +384,10 @@ public class SyntacticalAnalyzer {
             stmt_list();
             if (!eat(Lexeme.Type.END))
                 return Expression.error();
+        }else {
+            code.setTag(after_if_a);
         }
+        code.setTag(after_if_b);
         parse_stack.pop();
         return Expression.void_();
     }
@@ -386,8 +404,14 @@ public class SyntacticalAnalyzer {
         parse_stack.push(GrammarRule.DO_STMT);
         if (!eat(Lexeme.Type.DO))
             return Expression.error();
+        String before_do=code.getIncrementalTagName("BEFORE_DO");
+        String after_do=code.getIncrementalTagName("AFTER_DO");
+        code.setTag(before_do);
         stmt_list();
         do_suffix();
+        code.jzStack(after_do);
+        code.jumpStack(before_do);
+        code.setTag(after_do);
         parse_stack.pop();
         return Expression.void_();
     }
@@ -415,8 +439,23 @@ public class SyntacticalAnalyzer {
         Lexeme identifier = cur_token;
         if (!eat(Lexeme.Type.IDENTIFIER))
             return Expression.error();
-        else
+        else {
             expression = new Expression(sem.getIdentiferType(identifier));
+            code.readToStack();
+            switch (expression.getType()){
+                case INTEGER:
+                    code.convertStrToIntStack();
+                    code.assignToVariableFromStack(identifier.getValue());
+                    break;
+                case REAL:
+                    code.convertStrToRealStack();
+                    code.assignToVariableFromStack(identifier.getValue());
+                    break;
+                case STRING:
+                    code.assignToVariableFromStack(identifier.getValue());
+                    break;
+            }
+        }
         if (!eat(Lexeme.Type.CLOSETHEPAR))
             return Expression.error();
         parse_stack.pop();
@@ -429,7 +468,18 @@ public class SyntacticalAnalyzer {
             return Expression.error();
         if (!eat(Lexeme.Type.OPENTHEPAR))
             return Expression.error();
-        writable(); // ingored
+        Expression writable=writable();
+        switch (writable.getType()){
+            case INTEGER:
+                code.writeIntegerStack();
+                break;
+            case REAL:
+                code.writeRealStack();
+                break;
+            case STRING:
+                code.writeStringStack();
+                break;
+        }
         if (!eat(Lexeme.Type.CLOSETHEPAR))
             return Expression.error();
         parse_stack.pop();
@@ -450,6 +500,51 @@ public class SyntacticalAnalyzer {
             Expression operator = relop();
             Expression term_b = simple_expr();
             term = sem.validateOperation(term, operator, term_b);
+            boolean is_real=term.getType()==SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()){
+                case GREATHER:
+                    if (is_real){
+                        code.greaterRealStack();
+                    }else{
+                        code.greaterIntegerStack();
+                    }
+                    break;
+                case GREATHER_EQUAL:
+                    if (is_real){
+                        code.greaterEqualRealStack();
+                    }else{
+                        code.greaterEqualIntegerStack();
+                    }
+                    break;
+                case LESS:
+                    if (is_real){
+                        code.lessRealStack();
+                    }else{
+                        code.lessIntegerStack();
+                    }
+                    break;
+                case LESS_EQUAL:
+                    if (is_real){
+                        code.lessEqualRealStack();
+                    }else{
+                        code.lessEqualIntegerStack();
+                    }
+                    break;
+                case EQUAL:
+                    if (is_real){
+                        code.equalRealStack();
+                    }else{
+                        code.equalIntegerStack();
+                    }
+                    break;
+                case DIFF:
+                    if (is_real){
+                        code.diffRealStack();
+                    }else{
+                        code.diffIntegerStack();
+                    }
+                    break;
+            }
         }
         parse_stack.pop();
         return term;
@@ -462,6 +557,26 @@ public class SyntacticalAnalyzer {
             Expression operator = addop();
             Expression term_b = term();
             term = sem.validateOperation(term, operator, term_b);
+            boolean is_real=term.getType()==SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()){
+                case PLUS:
+                    if (is_real){
+                        code.sumRealStack();
+                    }else{
+                        code.sumIntegerStack();
+                    }
+                    break;
+                case MINUS:
+                    if (is_real){
+                        code.subtractRealStack();
+                    }else{
+                        code.sumIntegerStack();
+                    }
+                    break;
+                case OR:
+                    code.sumIntegerStack();
+                    break;
+            }
         }
         parse_stack.pop();
         return term;
@@ -474,6 +589,26 @@ public class SyntacticalAnalyzer {
             Expression operator = mulop();
             Expression term_b = factor_a();
             term = sem.validateOperation(term, operator, term_b);
+            boolean is_real=term.getType()== SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()){
+                case TIMES:
+                    if (is_real){
+                        code.multiplyRealStack();
+                    }else{
+                        code.multiplyIntegerStack();
+                    }
+                    break;
+                case DIV:
+                    if (is_real){
+                        code.divideRealStack();
+                    }else{
+                        code.divideIntegerStack();
+                    }
+                    break;
+                case AND:
+                    code.multiplyIntegerStack();
+                    break;
+            }
         }
         parse_stack.pop();
         return term;
@@ -493,7 +628,27 @@ public class SyntacticalAnalyzer {
                     return Expression.error();
                 break;
         }
-        expression = new Expression(sem.validateExpression(factor(), token_type));
+        Expression factor=factor();
+        expression = new Expression(sem.validateExpression(factor, token_type));
+        switch (token_type) {
+            case NOT:
+                code.negateStack();
+                break;
+            case MINUS:
+                switch (factor.getType()){
+                    case INTEGER:
+                        code.addValueToStack(SemanticAnalyzer.Type.INTEGER,"0");
+                        code.swapStack();
+                        code.subtractIntegerStack();
+                        break;
+                    case REAL:
+                        code.addValueToStack(SemanticAnalyzer.Type.REAL,"0");
+                        code.swapStack();
+                        code.subtractRealStack();
+                        break;
+                }
+                break;
+        }
         parse_stack.pop();
         return expression;
     }
@@ -506,27 +661,38 @@ public class SyntacticalAnalyzer {
                 Lexeme identifier = cur_token;
                 if (!eat(Lexeme.Type.IDENTIFIER))
                     return Expression.error();
-                else
+                else {
                     expression = new Expression(sem.getIdentiferType(identifier));
+                    code.addVariableToStack(identifier.getValue());
+                }
                 break;
             // constant start
             case INT_CONSTANT:
+                Lexeme int_const = cur_token;
                 if (!eat(Lexeme.Type.INT_CONSTANT))
                     return Expression.error();
-                else
+                else {
                     expression = new Expression(SemanticAnalyzer.Type.INTEGER);
+                    code.addValueToStack(SemanticAnalyzer.Type.INTEGER,int_const.getValue());
+                }
                 break;
             case REAL_CONSTANT:
+                Lexeme real_const = cur_token;
                 if (!eat(Lexeme.Type.REAL_CONSTANT))
                     return Expression.error();
-                else
+                else {
                     expression = new Expression(SemanticAnalyzer.Type.REAL);
+                    code.addValueToStack(SemanticAnalyzer.Type.REAL,real_const.getValue());
+                }
                 break;
             case STRING_CONSTANT:
+                Lexeme string_const = cur_token;
                 if (!eat(Lexeme.Type.STRING_CONSTANT))
                     return Expression.error();
-                else
+                else {
                     expression = new Expression(SemanticAnalyzer.Type.STRING);
+                    code.addValueToStack(SemanticAnalyzer.Type.STRING,string_const.getValue());
+                }
                 break;
             // constant end
             case OPENTHEPAR:
@@ -552,37 +718,37 @@ public class SyntacticalAnalyzer {
                 if (!eat(Lexeme.Type.EQUAL))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.BOOL_AND_NUM_CMP_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.BOOL_AND_NUM_CMP_OP, Lexeme.Type.EQUAL);
                 break;
             case GREATHER:
                 if (!eat(Lexeme.Type.GREATHER))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP, Lexeme.Type.GREATHER);
                 break;
             case GREATHER_EQUAL:
                 if (!eat(Lexeme.Type.GREATHER_EQUAL))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP, Lexeme.Type.GREATHER_EQUAL);
                 break;
             case LESS:
                 if (!eat(Lexeme.Type.LESS))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP, Lexeme.Type.LESS);
                 break;
             case LESS_EQUAL:
                 if (!eat(Lexeme.Type.LESS_EQUAL))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.COMPARE_OP, Lexeme.Type.LESS_EQUAL);
                 break;
             case DIFF:
                 if (!eat(Lexeme.Type.DIFF))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.BOOL_AND_NUM_CMP_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.BOOL_AND_NUM_CMP_OP, Lexeme.Type.DIFF);
                 break;
             default:
                 displayError("Expected relop", lex.getCurLine());
@@ -600,19 +766,19 @@ public class SyntacticalAnalyzer {
                 if (!eat(Lexeme.Type.PLUS))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP, Lexeme.Type.PLUS);
                 break;
             case MINUS:
                 if (!eat(Lexeme.Type.MINUS))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP, Lexeme.Type.MINUS);
                 break;
             case OR:
                 if (!eat(Lexeme.Type.OR))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.BOOLEAN_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.BOOLEAN_OP, Lexeme.Type.OR);
                 break;
             default:
                 displayError("Expected addop", lex.getCurLine());
@@ -629,20 +795,21 @@ public class SyntacticalAnalyzer {
             case TIMES:
                 if (!eat(Lexeme.Type.TIMES))
                     return Expression.error();
-                else
-                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP);
+                else {
+                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP, Lexeme.Type.TIMES);
+                }
                 break;
             case DIV:
                 if (!eat(Lexeme.Type.DIV))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.NUMERIC_OP, Lexeme.Type.DIV);
                 break;
             case AND:
                 if (!eat(Lexeme.Type.AND))
                     return Expression.error();
                 else
-                    expression = new Expression(SemanticAnalyzer.Type.BOOLEAN_OP);
+                    expression = new Expression(SemanticAnalyzer.Type.BOOLEAN_OP, Lexeme.Type.AND);
                 break;
             default:
                 displayError("Expected mulop", lex.getCurLine());
