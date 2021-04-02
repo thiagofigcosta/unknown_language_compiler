@@ -8,12 +8,12 @@ public class Lexeme {
         return type;
     }
 
-    public String getValue() {
-        return value;
-    }
-
     public void setType(Type type) {
         this.type = type;
+    }
+
+    public String getValue() {
+        return value;
     }
 
     public void setValue(String value) {
@@ -21,53 +21,30 @@ public class Lexeme {
     }
 
     public void appendValue(String value) {
-        if(this.value==null)
-            this.value="";
+        if (this.value == null)
+            this.value = "";
         this.value = this.value + value;
     }
 
     public void appendValue(char value) {
-        if(this.value==null)
-            this.value="";
+        if (this.value == null)
+            this.value = "";
         this.value = this.value + value;
     }
 
     @Override
     public String toString() {
-        if (value==null){
+        if (value == null) {
             return "Lexeme{" +
                     "type=" + type +
                     '}';
-        }else{
+        } else {
             return "Lexeme{" +
                     "type=" + type +
                     ", value='" + value + '\'' +
                     '}';
         }
     }
-
-    public static class Builder{
-        private Type type;
-        private String value;
-        public static Builder aLexeme(){
-            return new Builder();
-        }
-        public Builder withType(Type t){
-            this.type=t;
-            return this;
-        }
-        public Builder withValue(String v){
-            this.value=v;
-            return this;
-        }
-        public Lexeme build(){
-            Lexeme lex=new Lexeme();
-            lex.setType(type);
-            lex.setValue(value);
-            return lex;
-        }
-    }
-
 
     public enum Type {
         // special tokens
@@ -120,5 +97,31 @@ public class Lexeme {
         NOT,
         OR,
         AND
+    }
+
+    public static class Builder {
+        private Type type;
+        private String value;
+
+        public static Builder aLexeme() {
+            return new Builder();
+        }
+
+        public Builder withType(Type t) {
+            this.type = t;
+            return this;
+        }
+
+        public Builder withValue(String v) {
+            this.value = v;
+            return this;
+        }
+
+        public Lexeme build() {
+            Lexeme lex = new Lexeme();
+            lex.setType(type);
+            lex.setValue(value);
+            return lex;
+        }
     }
 }

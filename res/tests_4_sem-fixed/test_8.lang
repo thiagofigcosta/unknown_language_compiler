@@ -1,0 +1,11 @@
+init
+ a, b is integer;
+begin
+ write("Digite um valor: ");
+ read(a);
+
+ b := (a * 2) + 101;
+
+ write("Valor apos calculos: ");
+ write(b);
+stop

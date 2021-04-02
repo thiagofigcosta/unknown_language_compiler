@@ -1,0 +1,27 @@
+init
+ a, b, c, maior is integer;
+begin
+ write("Digite uma idade: ");
+ read(a);
+ write("Digite outra idade: ");
+ read(b);
+ write("Digite mais uma idade: ");
+ read(c);
+
+ maior := 0;
+ if ( (a>b) and (a>c) ) begin
+ maior := a;
+ end
+ else begin
+ if (b>c) begin
+ maior := b;
+ end
+ else begin
+ maior := c;
+
+
+ write("Maior idade: ");
+ write(maior);
+ end;
+end;
+stop
