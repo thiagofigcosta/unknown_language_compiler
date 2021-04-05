@@ -3,6 +3,13 @@
 To run, pass as argument to the main class a single test file, it will output error messages if the program does not
 match with the grammar, or it will create a ".a" file with an assembly text.
 
+The virtual machine to run the assembly code on windows can be found on the file `vm.exe` and its documentation in portuguese can be found on `vmdocpt.pdf`.
+
+To run some file on the virtual machine run on windows prompt:
+```
+vm.exe some_file.a
+```
+
 Grammar:
 
 ```
