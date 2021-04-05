@@ -18,10 +18,9 @@ begin
  end
  else begin
  maior := c;
-
+ end;
+end;
 
  write("Maior idade: ");
  write(maior);
- end;
-end;
 stop
