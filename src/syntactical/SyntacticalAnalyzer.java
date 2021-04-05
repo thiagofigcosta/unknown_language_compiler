@@ -351,7 +351,9 @@ public class SyntacticalAnalyzer {
             expression = new Expression(sem.getIdentiferType(identifier));
         if (!eat(Lexeme.Type.ASSIGN))
             return Expression.error();
-        expression = sem.validateAssign(expression, simple_expr());
+        Expression value_to_assign=simple_expr();
+        expression = sem.validateAssign(expression,value_to_assign);
+        code.castStack(sem.getIdentiferType(identifier),value_to_assign.getType());
         code.assignToVariableFromStack(identifier.getValue());
         parse_stack.pop();
         return expression;
@@ -570,7 +572,7 @@ public class SyntacticalAnalyzer {
                     if (is_real){
                         code.subtractRealStack();
                     }else{
-                        code.sumIntegerStack();
+                        code.subtractIntegerStack();
                     }
                     break;
                 case OR:

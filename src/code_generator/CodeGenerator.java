@@ -87,7 +87,7 @@ public class CodeGenerator {
             case STRING:
                 addresses.put(identifier,global_pointer);
                 global_pointer+=STRING_SIZE;
-                instructions.add(new Instruction(Instruction.Operation.PUSHS,DEFAULT_STRING_VALUE));
+                instructions.add(new Instruction(Instruction.Operation.PUSHS,"\""+DEFAULT_STRING_VALUE+"\""));
                 break;
         }
     }
@@ -263,6 +263,36 @@ public class CodeGenerator {
 
     public void assignToVariableFromStack(String identifier){
         instructions.add(new Instruction(Instruction.Operation.STOREG,String.valueOf(addresses.get(identifier))));
+    }
+
+    public void castStack(SemanticAnalyzer.Type dst_type,SemanticAnalyzer.Type src_type){
+        if (dst_type==src_type){
+            return;
+        }
+        if (dst_type==SemanticAnalyzer.Type.REAL){
+            if (src_type==SemanticAnalyzer.Type.INTEGER){
+                instructions.add(new Instruction(Instruction.Operation.ITOF));
+            }
+            if (src_type==SemanticAnalyzer.Type.STRING){
+                instructions.add(new Instruction(Instruction.Operation.ATOF));
+            }
+        }
+        if (dst_type==SemanticAnalyzer.Type.INTEGER){
+            if (src_type==SemanticAnalyzer.Type.REAL){
+                instructions.add(new Instruction(Instruction.Operation.FTOI));
+            }
+            if (src_type==SemanticAnalyzer.Type.STRING){
+                instructions.add(new Instruction(Instruction.Operation.ATOI));
+            }
+        }
+        if (dst_type==SemanticAnalyzer.Type.STRING){
+            if (src_type==SemanticAnalyzer.Type.REAL){
+                instructions.add(new Instruction(Instruction.Operation.STRF));
+            }
+            if (src_type==SemanticAnalyzer.Type.INTEGER){
+                instructions.add(new Instruction(Instruction.Operation.STRI));
+            }
+        }
     }
 
     public List<Instruction> getInstructions() {
