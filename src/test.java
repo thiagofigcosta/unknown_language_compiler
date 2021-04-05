@@ -67,7 +67,7 @@ public class test {
             LexicalAnalyzer lex_anal = new LexicalAnalyzer(path);
             SyntacticalAnalyzer syn_anal = new SyntacticalAnalyzer(lex_anal);
             syn_anal.run();
-            CodeGenerator code_gen=syn_anal.getCodeGenerator();
+            CodeGenerator code_gen = syn_anal.getCodeGenerator();
             getStdout().println("File (" + path + ") is ok semantically;");
             getStdout().println(code_gen.getCode());
         } catch (FileNotFoundException e) {

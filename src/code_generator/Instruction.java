@@ -32,20 +32,20 @@ public class Instruction {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String out;
-        if(operation==Operation.TAG){
-            out=argument+":";
-        }else{
-            out=""+operation;
-            if (!argument.equals("")){
-                out+=" "+argument;
+        if (operation == Operation.TAG) {
+            out = argument + ":";
+        } else {
+            out = "" + operation;
+            if (!argument.equals("")) {
+                out += " " + argument;
             }
         }
-        return out+"\n";
+        return out + "\n";
     }
 
-    public enum Operation{
+    public enum Operation {
         // Not an operation
         TAG,
         // Integer operations

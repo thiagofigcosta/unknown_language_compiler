@@ -14,10 +14,10 @@ public class SemanticAnalyzer {
     private final CodeGenerator code;
     private int error_counter;
 
-    public SemanticAnalyzer(LexicalAnalyzer lex,CodeGenerator code) {
+    public SemanticAnalyzer(LexicalAnalyzer lex, CodeGenerator code) {
         error_counter = 0;
         this.lex = lex;
-        this.code=code;
+        this.code = code;
     }
 
     public static void setStderr(PrintStream stderr) {
@@ -90,7 +90,7 @@ public class SemanticAnalyzer {
     public Expression declareVariables(Expression identifiers, Expression type) {
         for (String identifier : identifiers.getIdentifiers()) {
             lex.getTable().add(Lexeme.Builder.aLexeme().withType(Lexeme.Type.IDENTIFIER).withValue(identifier).build(), type.getType());
-            code.declareVariable(identifier,type.getType());
+            code.declareVariable(identifier, type.getType());
         }
         return Expression.void_();
     }

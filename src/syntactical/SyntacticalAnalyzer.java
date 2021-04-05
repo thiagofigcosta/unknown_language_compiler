@@ -64,7 +64,7 @@ public class SyntacticalAnalyzer {
     public SyntacticalAnalyzer(LexicalAnalyzer lex) {
         this.lex = lex;
         this.code = new CodeGenerator();
-        this.sem = new SemanticAnalyzer(lex,code);
+        this.sem = new SemanticAnalyzer(lex, code);
         this.cur_token = lex.getToken();
         this.error_counter = 0;
         this.parse_stack = new Stack<>();
@@ -75,15 +75,15 @@ public class SyntacticalAnalyzer {
         SemanticAnalyzer.setStderr(stderr);
     }
 
-    public CodeGenerator getCodeGenerator(){
-        return code;
-    }
-
     private static Lexeme.Type[] listToNativeArray(List<Lexeme.Type> list) {
         Lexeme.Type[] out = new Lexeme.Type[list.size()];
         for (int i = 0; i < list.size(); i++)
             out[i] = list.get(i);
         return out;
+    }
+
+    public CodeGenerator getCodeGenerator() {
+        return code;
     }
 
     public void run() throws Exception {
@@ -351,9 +351,9 @@ public class SyntacticalAnalyzer {
             expression = new Expression(sem.getIdentiferType(identifier));
         if (!eat(Lexeme.Type.ASSIGN))
             return Expression.error();
-        Expression value_to_assign=simple_expr();
-        expression = sem.validateAssign(expression,value_to_assign);
-        code.castStack(sem.getIdentiferType(identifier),value_to_assign.getType());
+        Expression value_to_assign = simple_expr();
+        expression = sem.validateAssign(expression, value_to_assign);
+        code.castStack(sem.getIdentiferType(identifier), value_to_assign.getType());
         code.assignToVariableFromStack(identifier.getValue());
         parse_stack.pop();
         return expression;
@@ -366,8 +366,8 @@ public class SyntacticalAnalyzer {
         if (!eat(Lexeme.Type.OPENTHEPAR))
             return Expression.error();
         condition();
-        String after_if_a=code.getIncrementalTagName("AFTER_IF_A");
-        String after_if_b=code.getIncrementalTagName("AFTER_IF_B");
+        String after_if_a = code.getIncrementalTagName("AFTER_IF_A");
+        String after_if_b = code.getIncrementalTagName("AFTER_IF_B");
         code.jzStack(after_if_a);
         if (!eat(Lexeme.Type.CLOSETHEPAR))
             return Expression.error();
@@ -386,7 +386,7 @@ public class SyntacticalAnalyzer {
             stmt_list();
             if (!eat(Lexeme.Type.END))
                 return Expression.error();
-        }else {
+        } else {
             code.setTag(after_if_a);
         }
         code.setTag(after_if_b);
@@ -406,8 +406,8 @@ public class SyntacticalAnalyzer {
         parse_stack.push(GrammarRule.DO_STMT);
         if (!eat(Lexeme.Type.DO))
             return Expression.error();
-        String before_do=code.getIncrementalTagName("BEFORE_DO");
-        String after_do=code.getIncrementalTagName("AFTER_DO");
+        String before_do = code.getIncrementalTagName("BEFORE_DO");
+        String after_do = code.getIncrementalTagName("AFTER_DO");
         code.setTag(before_do);
         stmt_list();
         do_suffix();
@@ -444,7 +444,7 @@ public class SyntacticalAnalyzer {
         else {
             expression = new Expression(sem.getIdentiferType(identifier));
             code.readToStack();
-            switch (expression.getType()){
+            switch (expression.getType()) {
                 case INTEGER:
                     code.convertStrToIntStack();
                     code.assignToVariableFromStack(identifier.getValue());
@@ -470,8 +470,8 @@ public class SyntacticalAnalyzer {
             return Expression.error();
         if (!eat(Lexeme.Type.OPENTHEPAR))
             return Expression.error();
-        Expression writable=writable();
-        switch (writable.getType()){
+        Expression writable = writable();
+        switch (writable.getType()) {
             case INTEGER:
                 code.writeIntegerStack();
                 break;
@@ -502,47 +502,47 @@ public class SyntacticalAnalyzer {
             Expression operator = relop();
             Expression term_b = simple_expr();
             term = sem.validateOperation(term, operator, term_b);
-            boolean is_real=term.getType()==SemanticAnalyzer.Type.REAL;
-            switch (operator.getToken()){
+            boolean is_real = term.getType() == SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()) {
                 case GREATHER:
-                    if (is_real){
+                    if (is_real) {
                         code.greaterRealStack();
-                    }else{
+                    } else {
                         code.greaterIntegerStack();
                     }
                     break;
                 case GREATHER_EQUAL:
-                    if (is_real){
+                    if (is_real) {
                         code.greaterEqualRealStack();
-                    }else{
+                    } else {
                         code.greaterEqualIntegerStack();
                     }
                     break;
                 case LESS:
-                    if (is_real){
+                    if (is_real) {
                         code.lessRealStack();
-                    }else{
+                    } else {
                         code.lessIntegerStack();
                     }
                     break;
                 case LESS_EQUAL:
-                    if (is_real){
+                    if (is_real) {
                         code.lessEqualRealStack();
-                    }else{
+                    } else {
                         code.lessEqualIntegerStack();
                     }
                     break;
                 case EQUAL:
-                    if (is_real){
+                    if (is_real) {
                         code.equalRealStack();
-                    }else{
+                    } else {
                         code.equalIntegerStack();
                     }
                     break;
                 case DIFF:
-                    if (is_real){
+                    if (is_real) {
                         code.diffRealStack();
-                    }else{
+                    } else {
                         code.diffIntegerStack();
                     }
                     break;
@@ -559,19 +559,19 @@ public class SyntacticalAnalyzer {
             Expression operator = addop();
             Expression term_b = term();
             term = sem.validateOperation(term, operator, term_b);
-            boolean is_real=term.getType()==SemanticAnalyzer.Type.REAL;
-            switch (operator.getToken()){
+            boolean is_real = term.getType() == SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()) {
                 case PLUS:
-                    if (is_real){
+                    if (is_real) {
                         code.sumRealStack();
-                    }else{
+                    } else {
                         code.sumIntegerStack();
                     }
                     break;
                 case MINUS:
-                    if (is_real){
+                    if (is_real) {
                         code.subtractRealStack();
-                    }else{
+                    } else {
                         code.subtractIntegerStack();
                     }
                     break;
@@ -591,19 +591,19 @@ public class SyntacticalAnalyzer {
             Expression operator = mulop();
             Expression term_b = factor_a();
             term = sem.validateOperation(term, operator, term_b);
-            boolean is_real=term.getType()== SemanticAnalyzer.Type.REAL;
-            switch (operator.getToken()){
+            boolean is_real = term.getType() == SemanticAnalyzer.Type.REAL;
+            switch (operator.getToken()) {
                 case TIMES:
-                    if (is_real){
+                    if (is_real) {
                         code.multiplyRealStack();
-                    }else{
+                    } else {
                         code.multiplyIntegerStack();
                     }
                     break;
                 case DIV:
-                    if (is_real){
+                    if (is_real) {
                         code.divideRealStack();
-                    }else{
+                    } else {
                         code.divideIntegerStack();
                     }
                     break;
@@ -630,21 +630,21 @@ public class SyntacticalAnalyzer {
                     return Expression.error();
                 break;
         }
-        Expression factor=factor();
+        Expression factor = factor();
         expression = new Expression(sem.validateExpression(factor, token_type));
         switch (token_type) {
             case NOT:
                 code.negateStack();
                 break;
             case MINUS:
-                switch (factor.getType()){
+                switch (factor.getType()) {
                     case INTEGER:
-                        code.addValueToStack(SemanticAnalyzer.Type.INTEGER,"0");
+                        code.addValueToStack(SemanticAnalyzer.Type.INTEGER, "0");
                         code.swapStack();
                         code.subtractIntegerStack();
                         break;
                     case REAL:
-                        code.addValueToStack(SemanticAnalyzer.Type.REAL,"0");
+                        code.addValueToStack(SemanticAnalyzer.Type.REAL, "0");
                         code.swapStack();
                         code.subtractRealStack();
                         break;
@@ -675,7 +675,7 @@ public class SyntacticalAnalyzer {
                     return Expression.error();
                 else {
                     expression = new Expression(SemanticAnalyzer.Type.INTEGER);
-                    code.addValueToStack(SemanticAnalyzer.Type.INTEGER,int_const.getValue());
+                    code.addValueToStack(SemanticAnalyzer.Type.INTEGER, int_const.getValue());
                 }
                 break;
             case REAL_CONSTANT:
@@ -684,7 +684,7 @@ public class SyntacticalAnalyzer {
                     return Expression.error();
                 else {
                     expression = new Expression(SemanticAnalyzer.Type.REAL);
-                    code.addValueToStack(SemanticAnalyzer.Type.REAL,real_const.getValue());
+                    code.addValueToStack(SemanticAnalyzer.Type.REAL, real_const.getValue());
                 }
                 break;
             case STRING_CONSTANT:
@@ -693,7 +693,7 @@ public class SyntacticalAnalyzer {
                     return Expression.error();
                 else {
                     expression = new Expression(SemanticAnalyzer.Type.STRING);
-                    code.addValueToStack(SemanticAnalyzer.Type.STRING,string_const.getValue());
+                    code.addValueToStack(SemanticAnalyzer.Type.STRING, string_const.getValue());
                 }
                 break;
             // constant end

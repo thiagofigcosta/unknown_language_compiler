@@ -1,8 +1,10 @@
 # unknown_language_compiler
 
-To run, pass as argument to the main class a single test file, it will output error messages if the program does not match with the grammar, or it will create a ".a" file with an assembly text.
+To run, pass as argument to the main class a single test file, it will output error messages if the program does not
+match with the grammar, or it will create a ".a" file with an assembly text.
 
 Grammar:
+
 ```
 program     ::= init [decl-list] begin stmt-list stop
 decl-list   ::= decl ";" { decl ";"}

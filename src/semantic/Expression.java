@@ -6,27 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Expression {
-    private SemanticAnalyzer.Type type;
-
-    public Lexeme.Type getToken() {
-        return token;
-    }
-
-    public void setToken(Lexeme.Type token) {
-        this.token = token;
-    }
-
-    private Lexeme.Type token;
     private final List<String> identifiers;
+    private SemanticAnalyzer.Type type;
+    private Lexeme.Type token;
 
     public Expression(SemanticAnalyzer.Type type) {
         this.type = type;
         identifiers = new ArrayList<>();
     }
-
     public Expression(SemanticAnalyzer.Type type, Lexeme.Type token) {
         this.type = type;
-        this.token=token;
+        this.token = token;
         identifiers = new ArrayList<>();
     }
 
@@ -36,6 +26,14 @@ public class Expression {
 
     public static Expression void_() {
         return new Expression(SemanticAnalyzer.Type.VOID);
+    }
+
+    public Lexeme.Type getToken() {
+        return token;
+    }
+
+    public void setToken(Lexeme.Type token) {
+        this.token = token;
     }
 
     public SemanticAnalyzer.Type getType() {
