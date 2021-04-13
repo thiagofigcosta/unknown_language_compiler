@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="unknown_language_compiler:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/unknown_language_compiler_jar</output-path>
-    <root id="archive" name="unknown_language_compiler.jar">
-      <element id="module-output" name="unknown_language_compiler" />
-    </root>
-  </artifact>
-</component>
